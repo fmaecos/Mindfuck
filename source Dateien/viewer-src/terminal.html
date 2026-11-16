@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<title>InstaBox Terminal</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html, body { margin:0; padding:0; height:100%; width:100%; overflow:hidden; background:#0b0b0e; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; color:#e6e6ea; -webkit-user-select:none; user-select:none; }
+  #root { position:fixed; left:0; right:0; top:0; bottom:0; display:flex; flex-direction:column; }
+  #termWrap { position:relative; flex:1 1 auto; min-height:0; padding:6px 4px 4px 8px; }
+  #term { position:absolute; left:8px; right:4px; top:6px; bottom:4px; }
+  #bar { flex:0 0 auto; display:flex; align-items:center; gap:4px; padding:6px 8px calc(6px + env(safe-area-inset-bottom)); background:#0e0e12; border-top:1px solid rgba(255,255,255,.1); overflow-x:auto; scrollbar-width:none; }
+  #bar::-webkit-scrollbar { display:none; }
+  .tool { flex:0 0 auto; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; min-width:50px; height:42px; border-radius:11px; color:#a9a9b4; font-size:9.5px; }
+  .tool svg { width:18px; height:18px; }
+  .tool.active { color:#05df72; background:rgba(5,223,114,.12); }
+  .tool:active { background:rgba(255,255,255,.08); }
+  #keys { position:absolute; left:0; right:0; bottom:54px; z-index:7; display:none; gap:6px; padding:7px 8px; background:rgba(14,14,18,.96); border-top:1px solid rgba(255,255,255,.1); overflow-x:auto; scrollbar-width:none; }
+  #keys.on { display:flex; }
+  #keys::-webkit-scrollbar { display:none; }
+  .key { flex:0 0 auto; min-width:42px; height:38px; border-radius:9px; background:#1e1e25; border:1px solid rgba(255,255,255,.12); color:#e9e9ee; font-size:13px; font-weight:600; display:flex; align-items:center; justify-content:center; padding:0 10px; }
+  .key:active { background:#2a2a33; }
+  .key.mod.on { background:#05df72; color:#06120b; border-color:#05df72; }
+  #kb { position:absolute; left:0; top:0; width:1px; height:1px; opacity:0; border:0; padding:0; margin:0; resize:none; overflow:hidden; }
+  #status { position:absolute; left:0; top:0; right:0; bottom:0; z-index:8; display:none; align-items:center; justify-content:center; flex-direction:column; gap:12px; background:rgba(6,6,8,.88); padding:24px; text-align:center; }
+  #status.on { display:flex; }
+  .spin { width:26px; height:26px; border-radius:50%; border:2.5px solid rgba(255,255,255,.18); border-top-color:#05df72; animation:sp 900ms linear infinite; }
+  @keyframes sp { to { transform:rotate(360deg); } }
+  #statusText { font-size:13px; color:#c9c9d2; max-width:420px; }
+  #statusText.err { color:#ff8f8f; }
+  .btn { appearance:none; border:1px solid rgba(255,255,255,.18); background:#17171c; color:#fff; border-radius:10px; padding:9px 14px; font-size:13px; font-weight:600; }
+</style>
+</head>
+<body>
+<div id="root">
+  <div id="termWrap"><div id="term"></div></div>
+  <div id="keys"></div>
+  <div id="bar">
+    <div class="tool" id="tKeyboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/></svg><span>Tastatur</span></div>
+    <div class="tool" id="tFontDown"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 12h14M12 5v14"/></svg><span>A−</span></div>
+    <div class="tool" id="tFontUp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 12h14"/></svg><span>A+</span></div>
+    <div class="tool" id="tCtrl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/></svg><span>Strg</span></div>
+    <div class="tool" id="tReconnect"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg><span>Neu</span></div>
+  </div>
+  <div id="status"><div class="spin" id="spin"></div><div id="statusText">Verbinde…</div><button class="btn" id="reconnect" style="display:none">Neu verbinden</button></div>
+</div>
+<textarea id="kb" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false"></textarea>
+<script>/*XTERM_JS*/</script>
+<script>/*APP*/</script>
+</body>
+</html>
