@@ -1,0 +1,3 @@
+[submodule "Operit"]
+	path = Operit
+	url = https://github.com/fmaecos/Operit.git

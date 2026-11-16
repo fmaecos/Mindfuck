@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<title>InstaBox Desktop</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin:0; padding:0; height:100%; width:100%; overflow:hidden; background:#08080a; overscroll-behavior:none; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,sans-serif; color:#ededf0; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
+  #root { position:fixed; left:0; right:0; top:0; bottom:0; display:flex; flex-direction:column; }
+  #stage { position:relative; flex:1 1 auto; overflow:hidden; background:#000; touch-action:none; }
+  #remote { position:absolute; left:0; top:0; right:0; bottom:0; }
+  #remote > div { flex:0 0 auto; }
+  #remote canvas { display:block; flex:0 0 auto; }
+  #demoScroll { position:absolute; left:0; top:0; right:0; bottom:0; overflow:auto; display:flex; align-items:center; justify-content:center; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  #demoScroll::-webkit-scrollbar { display:none; }
+  #demoWrap { position:relative; flex:0 0 auto; }
+  #demoCanvas { display:block; }
+  #pan { position:absolute; left:0; top:0; right:0; bottom:0; display:none; touch-action:none; z-index:4; }
+  #pan.on { display:block; }
+  #hud { position:absolute; left:8px; top:8px; z-index:6; display:flex; gap:6px; align-items:center; padding:4px 9px; border-radius:999px; background:rgba(12,12,16,.72); border:1px solid rgba(255,255,255,.12); font-size:11px; letter-spacing:.2px; color:#d6d6dc; backdrop-filter:blur(8px); pointer-events:none; }
+  #hud b { color:#fff; font-weight:600; }
+  #status { position:absolute; left:0; top:0; right:0; bottom:0; z-index:8; display:none; align-items:center; justify-content:center; flex-direction:column; gap:12px; background:rgba(6,6,8,.86); padding:24px; text-align:center; }
+  #status.on { display:flex; }
+  .spin { width:26px; height:26px; border-radius:50%; border:2.5px solid rgba(255,255,255,.18); border-top-color:#05df72; animation:sp 900ms linear infinite; }
+  @keyframes sp { to { transform:rotate(360deg); } }
+  #statusText { font-size:13px; color:#c9c9d2; max-width:420px; }
+  #statusText.err { color:#ff8f8f; }
+  .btn { appearance:none; border:1px solid rgba(255,255,255,.18); background:#17171c; color:#fff; border-radius:10px; padding:9px 14px; font-size:13px; font-weight:600; }
+  .btn:active { background:#23232b; }
+  #bar { flex:0 0 auto; display:flex; align-items:center; gap:4px; padding:6px 8px calc(6px + env(safe-area-inset-bottom)); background:#0e0e12; border-top:1px solid rgba(255,255,255,.1); overflow-x:auto; scrollbar-width:none; }
+  #bar::-webkit-scrollbar { display:none; }
+  .tool { flex:0 0 auto; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; min-width:52px; height:44px; border-radius:11px; color:#a9a9b4; font-size:9.5px; letter-spacing:.2px; }
+  .tool svg { width:19px; height:19px; }
+  .tool.active { color:#05df72; background:rgba(5,223,114,.12); }
+  .tool:active { background:rgba(255,255,255,.08); }
+  .tool.wide { min-width:72px; }
+  #menu { position:absolute; left:8px; right:8px; bottom:58px; z-index:9; display:none; flex-direction:column; background:#17171d; border:1px solid rgba(255,255,255,.13); border-radius:14px; padding:6px; box-shadow:0 18px 44px rgba(0,0,0,.6); }
+  #menu.on { display:flex; }
+  .mitem { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:11px 12px; border-radius:10px; font-size:13.5px; color:#e9e9ee; }
+  .mitem:active { background:rgba(255,255,255,.08); }
+  .mitem.sel { color:#05df72; font-weight:600; }
+  .mitem span.sub { color:#8b8b96; font-size:11.5px; }
+  #keys { position:absolute; left:0; right:0; bottom:58px; z-index:7; display:none; gap:6px; padding:7px 8px; background:rgba(14,14,18,.96); border-top:1px solid rgba(255,255,255,.1); overflow-x:auto; scrollbar-width:none; }
+  #keys.on { display:flex; }
+  #keys::-webkit-scrollbar { display:none; }
+  .key { flex:0 0 auto; min-width:42px; height:38px; border-radius:9px; background:#1e1e25; border:1px solid rgba(255,255,255,.12); color:#e9e9ee; font-size:13px; font-weight:600; display:flex; align-items:center; justify-content:center; padding:0 10px; }
+  .key:active { background:#2a2a33; }
+  .key.mod.on { background:#05df72; color:#06120b; border-color:#05df72; }
+  #kb { position:absolute; left:0; top:0; width:1px; height:1px; opacity:0; border:0; padding:0; margin:0; resize:none; overflow:hidden; }
+  .note { font-size:11px; color:#8b8b96; }
+</style>
+</head>
+<body>
+<div id="root">
+  <div id="stage">
+    <div id="remote"></div>
+    <div id="demoScroll" style="display:none"><div id="demoWrap"><canvas id="demoCanvas" width="1280" height="800"></canvas></div></div>
+    <div id="pan"></div>
+    <div id="hud"><b id="hudRes">—</b><span id="hudScale">100 %</span></div>
+    <div id="status"><div class="spin" id="spin"></div><div id="statusText">Verbinde…</div><button class="btn" id="reconnect" style="display:none">Neu verbinden</button></div>
+  </div>
+  <div id="keys"></div>
+  <div id="bar">
+    <div class="tool" id="tControl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span id="tControlLbl">Steuern</span></div>
+    <div class="tool" id="tPan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11V5a1.5 1.5 0 0 1 3 0v5"/><path d="M12 10V4a1.5 1.5 0 0 1 3 0v7"/><path d="M15 11V7a1.5 1.5 0 0 1 3 0v8a6 6 0 0 1-6 6h-1a6 6 0 0 1-5.2-3l-2.4-4a1.6 1.6 0 0 1 2.7-1.7L9 14"/></svg><span>Bewegen</span></div>
+    <div class="tool" id="tScale"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9V5a2 2 0 0 1 2-2h4"/><path d="M21 9V5a2 2 0 0 0-2-2h-4"/><path d="M3 15v4a2 2 0 0 0 2 2h4"/><path d="M21 15v4a2 2 0 0 1-2 2h-4"/></svg><span id="tScaleLbl">Einpassen</span></div>
+    <div class="tool" id="tZoomOut"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M8 11h6M20 20l-3.5-3.5"/></svg><span>−</span></div>
+    <div class="tool" id="tZoomIn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M8 11h6M11 8v6M20 20l-3.5-3.5"/></svg><span>+</span></div>
+    <div class="tool" id="tKeyboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/></svg><span>Tastatur</span></div>
+    <div class="tool" id="tMore"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/></svg><span>Mehr</span></div>
+  </div>
+  <div id="menu"></div>
+</div>
+<textarea id="kb" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false"></textarea>
+<script>/*NOVNC*/</script>
+<script>/*APP*/</script>
+</body>
+</html>
