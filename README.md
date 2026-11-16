@@ -1,5 +1,46 @@
 # Mindfuck
 
+## Projekte
+
+| Ordner | Projekt | Einbindung |
+| --- | --- | --- |
+| [`source Dateien/`](source%20Dateien/) | Agon Agent | Unveränderter Dateistand aus Google Drive |
+| [`Operit/`](Operit/) | Operit | Git-Submodul aus `fmaecos/Operit` |
+
+## Operit
+
+[`Operit/`](Operit/) liegt direkt neben `source Dateien/` und verweist als
+Git-Submodul auf [`fmaecos/Operit`](https://github.com/fmaecos/Operit).
+
+- **Eingebunden am:** 16. November 2026.
+- **Festgelegter Commit:**
+  [`7a39941bad80209973c535046a18195c5da9e647`](https://github.com/fmaecos/Operit/commit/7a39941bad80209973c535046a18195c5da9e647).
+- **Umfang:** 3.436 Dateien mit insgesamt rund 147 MB sowie zwei eigene
+  Submodul-Verweise. Der große Quellbestand wird nicht in die Git-Historie
+  dieses Repositories dupliziert.
+- **Originalbestand:** Code, Lizenz und Projektdokumentation bleiben im
+  Operit-Repository unverändert erhalten.
+
+### Nach dem Klonen laden
+
+Im Hauptverzeichnis dieses Repositories ausführen:
+
+```bash
+git submodule update --init --depth 1 -- Operit
+```
+
+Operit besitzt selbst die Submodule `terminal` und
+`tools/hotbuild/OperitNightlyRelease`; diese werden dabei nicht mitgeladen.
+Den Terminal-Quellcode kann man bei Bedarf separat initialisieren:
+
+```bash
+git -C Operit submodule update --init --depth 1 -- terminal
+```
+
+Das Release-Submodul verwendet im Original eine SSH-URL und kann zusätzliche
+Zugriffsrechte benötigen. Weitere Projekt- und Build-Hinweise stehen in
+[`Operit/README.md`](Operit/README.md).
+
 ## Agon Agent – Quelldateien
 
 Der Ordner [`source Dateien/`](source%20Dateien/) enthält den unveränderten
